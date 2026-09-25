@@ -10,7 +10,7 @@ int cforge_init(void) {
 	if (stat(".cforge", &st) == 0) {
 
 		if (S_ISDIR(st.st_mode)) {
-			printf("Cforge repository already exists\n");
+			printf("CForge repository already exists\n");
 			return 0;
 		}
 
@@ -43,7 +43,27 @@ int cforge_init(void) {
 		return 1;
 	}
 
-	printf("Initialized empty Cforge repository\n");
+	printf("Initialized empty CForge repository\n");
+
+	FILE *head = fopen(".cforge/HEAD", "w");
+
+	if (head == NULL) {
+		perror("cforge: failed to create HEAD");
+		return 1;
+	}
+
+	fprintf(head, "ref: refs/heads/main\n");
+
+	fclose(head);
+
+	FILE *index = fopen(".cforge/index", "w");
+
+	if (index == NULL) {
+		perror("cforge: failed to create index");
+		return 1;
+	}
+
+	fclose(index);
 
 	return 0;
 }
