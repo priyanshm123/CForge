@@ -2,6 +2,9 @@
 #include <string.h>
 
 #include "cforge.h"
+#include "hash.h"
+#include "index.h"
+#include "object.h"
 
 int main(int argc, char *argv[]) {
     
@@ -14,8 +17,28 @@ int main(int argc, char *argv[]) {
 		return cforge_init();
 	}
 
-	printf("Unknown command: %s\n", argv[1]);
+	if (strcmp(argv[1], "add") == 0) {
 
-	return 1;
+		if (argc < 3) {
+			fprintf(stderr, "Usage: cforge add <file>\n");
+			return 1;
+		}
+
+		unsigned long object_id;
+
+		if (store_object(argv[2], &object_id) != 0) {
+			return 1;
+		}
+
+		if (update_index(argv[2], object_id) != 0) {
+			return 1;
+		}
+
+		printf("Added '%s' to staging area\n", argv[2]);
+
+		return 0;
+	}
+
+	printf("Unknown command: %s\n", argv[1]);
 
 }
