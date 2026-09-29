@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include <string.h>
+#include <dirent.h>
 
 #include "cforge.h"
 #include "hash.h"
@@ -35,6 +36,55 @@ int main(int argc, char *argv[]) {
 		}
 
 		printf("Added '%s' to staging area\n", argv[2]);
+
+		return 0;
+	}
+
+	if (strcmp(argv[1], "status") == 0) {
+
+		DIR *directory = opendir(".");
+
+		if (directory == NULL) {
+			perror("cforge: failed to open directory");
+			return 1;
+		}
+
+		struct dirent *entry;
+
+		while ((entry = readdir(directory)) != NULL) {
+
+			if (strcmp(entry->d_name, ".") == 0 ||
+				strcmp(entry->d_name, "..") == 0 ||
+				strcmp(entry->d_name ,".cforge") == 0) {
+					continue;
+			}
+
+			if (!is_tracked(entry->d_name)) {
+				printf("Untracked: %s\n", entry->d_name);
+			}
+
+			IndexEntry entries[MAX_INDEX_ENTRIES];
+			int count;
+
+			load_index(entries, &count);
+
+			for (int i = 0; i < count; i++) {
+
+				if (strcmp(entries[i].filepath, entry->d_name) == 0) {
+
+					unsigned long current_hash = 
+						hash_file(entry->d_name);
+
+					if (current_hash != entries[i].object_id) {
+						printf("Modified: %s\n", entry->d_name);
+					}
+
+					break;
+				}
+			}
+		}
+
+		closedir(directory);
 
 		return 0;
 	}

@@ -92,3 +92,20 @@ int update_index(const char *filepath, unsigned long object_id)
 
     return 0;
 }
+
+int is_tracked(const char *filepath) {
+    IndexEntry entries[MAX_INDEX_ENTRIES];
+    int count;
+
+    if (load_index(entries, &count) != 0) {
+        return 0;
+    }
+
+    for (int i = 0; i < count; i++) {
+        if (strcmp(entries[i].filepath, filepath) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
+}

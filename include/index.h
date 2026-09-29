@@ -11,5 +11,6 @@ typedef struct {
 
 int load_index(IndexEntry entries[], int *count);
 int update_index(const char *filepath, unsigned long object_id);
+int is_tracked(const char *filepath);
 
 #endif
