@@ -6,6 +6,7 @@
 #include "hash.h"
 #include "index.h"
 #include "object.h"
+#include "commit.h"
 
 int main(int argc, char *argv[]) {
     
@@ -41,6 +42,8 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (strcmp(argv[1], "status") == 0) {
+
+		print_staged_files();
 
 		DIR *directory = opendir(".");
 
@@ -87,6 +90,16 @@ int main(int argc, char *argv[]) {
 		closedir(directory);
 
 		return 0;
+	}
+
+	if (strcmp(argv[1], "commit") == 0) {
+
+    	if (argc < 3) {
+        	fprintf(stderr, "Usage: cforge commit <message>\n");
+        	return 1;
+    	}
+
+    	return create_commit(argv[2]);
 	}
 
 	printf("Unknown command: %s\n", argv[1]);

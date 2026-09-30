@@ -109,3 +109,25 @@ int is_tracked(const char *filepath) {
 
     return 0;
 }
+
+int print_staged_files(void)
+{
+    IndexEntry entries[MAX_INDEX_ENTRIES];
+    int count;
+
+    if (load_index(entries, &count) != 0) {
+        return 1;
+    }
+
+    if (count == 0) {
+        return 0;
+    }
+
+    printf("Changes to be committed:\n");
+
+    for (int i = 0; i < count; i++) {
+        printf("    %s\n", entries[i].filepath);
+    }
+
+    return 0;
+}
