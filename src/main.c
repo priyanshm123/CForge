@@ -102,6 +102,10 @@ int main(int argc, char *argv[]) {
     	return create_commit(argv[2]);
 	}
 
+	if (strcmp(argv[1], "log") == 0) {
+		return show_log();
+	}
+
 	printf("Unknown command: %s\n", argv[1]);
 
 }

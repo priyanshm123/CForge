@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "commit.h"
 #include "index.h"
@@ -111,6 +112,58 @@ int create_commit(const char *message)
 
     printf("Commit ID: %lu\n", commit_id);
     printf("%s", commit_data);
+
+    return 0;
+}
+
+int show_log(void) {
+    unsigned long commit_id = get_current_commit();
+
+    if (commit_id == 0) {
+        printf("No commits yet.\n");
+        return 0;
+    }
+
+    while (commit_id != 0) {
+        char object_path[256];
+
+        snprintf(
+            object_path,
+            sizeof(object_path),
+            "./cforge/objects/%lu",
+            commit_id
+        );
+
+        FILE *object = fopen(object_path, "r");
+
+        if (object == NULL) {
+            perror("cforge: failed to read commit object");
+            fprintf(stderr, "Path attempted: %s\n", object_path);
+            return 1;
+        }
+
+        printf("commit %lu\n", commit_id);
+
+        char line[1024];
+        unsigned long parent = 0;
+
+        while (fgets(line, sizeof(line), object) != NULL) {
+
+            if (strncmp(line, "parent: ", 8) == 0) {
+                sscanf(line + 8, "%lu", &parent);
+            }
+
+            if (strncmp(line, "message: ", 9) == 0) {
+                printf("Message: %s", line + 9);
+            }
+        }
+
+        fclose(object);
+
+        printf("\n");
+
+        commit_id = parent;
+    }
 
     return 0;
 }
