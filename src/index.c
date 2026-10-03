@@ -2,6 +2,8 @@
 #include <string.h>
 #include "index.h"
 
+#include "commit.h"
+
 int load_index(IndexEntry entries[], int *count) {
     FILE *index = fopen(".cforge/index", "r");
 
@@ -127,6 +129,78 @@ int print_staged_files(void)
 
     for (int i = 0; i < count; i++) {
         printf("    %s\n", entries[i].filepath);
+    }
+
+    return 0;
+}
+
+int print_staged_files_against_head(void)
+{
+    IndexEntry index_entries[MAX_INDEX_ENTRIES];
+    IndexEntry commit_entries[MAX_INDEX_ENTRIES];
+
+    int index_count;
+    int commit_count;
+
+    if (load_index(index_entries, &index_count) != 0) {
+        return 1;
+    }
+
+    unsigned long head_commit = get_head_commit();
+
+    if (load_commit_files(
+            head_commit,
+            commit_entries,
+            &commit_count
+        ) != 0) {
+        return 1;
+    }
+
+    int printed_header = 0;
+
+    for (int i = 0; i < index_count; i++) {
+
+        int found = 0;
+
+        for (int j = 0; j < commit_count; j++) {
+
+            if (strcmp(
+                    index_entries[i].filepath,
+                    commit_entries[j].filepath
+                ) == 0) {
+
+                found = 1;
+
+                if (index_entries[i].object_id !=
+                    commit_entries[j].object_id) {
+
+                    if (!printed_header) {
+                        printf("Changes to be committed:\n");
+                        printed_header = 1;
+                    }
+
+                    printf(
+                        "    %s\n",
+                        index_entries[i].filepath
+                    );
+                }
+
+                break;
+            }
+        }
+
+        if (!found) {
+
+            if (!printed_header) {
+                printf("Changes to be committed:\n");
+                printed_header = 1;
+            }
+
+            printf(
+                "    %s\n",
+                index_entries[i].filepath
+            );
+        }
     }
 
     return 0;

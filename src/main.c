@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 
 	if (strcmp(argv[1], "status") == 0) {
 
-		print_staged_files();
+		print_staged_files_against_head();
 
 		DIR *directory = opendir(".");
 

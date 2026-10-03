@@ -6,7 +6,7 @@
 #include "index.h"
 #include "hash.h"
 
-static unsigned long get_current_commit(void)
+unsigned long get_head_commit(void)
 {
     FILE *file = fopen(".cforge/refs/heads/main", "r");
 
@@ -117,7 +117,7 @@ int create_commit(const char *message)
 }
 
 int show_log(void) {
-    unsigned long commit_id = get_current_commit();
+    unsigned long commit_id = get_head_commit();
 
     if (commit_id == 0) {
         printf("No commits yet.\n");
@@ -164,6 +164,63 @@ int show_log(void) {
 
         commit_id = parent;
     }
+
+    return 0;
+}
+
+int load_commit_files( unsigned long commit_id,
+    IndexEntry entries[], int *count)
+{
+    *count = 0;
+
+    if (commit_id == 0) {
+        return 0;
+    }
+
+    char object_path[256];
+
+    snprintf(
+        object_path,
+        sizeof(object_path),
+        ".cforge/objects/%lu",
+        commit_id
+    );
+
+    FILE *object = fopen(object_path, "r");
+
+    if (object == NULL) {
+        perror("cforge: failed to read commit");
+        return 1;
+    }
+
+    char line[1024];
+
+    while (fgets(line, sizeof(line), object) != NULL) {
+
+        if (strncmp(line, "parent:", 7) == 0 ||
+            strncmp(line, "message:", 8) == 0 ||
+            line[0] == '\n') {
+            continue;
+        }
+
+        if (*count >= MAX_INDEX_ENTRIES) {
+            fprintf(stderr, "cforge: too many files in commit\n");
+            fclose(object);
+            return 1;
+        }
+
+        if (sscanf(
+                line,
+                "%255s %lu",
+                entries[*count].filepath,
+                &entries[*count].object_id
+            ) == 2) {
+
+            (*count)++;
+        }
+    }
+
+    fclose(object);
 
     return 0;
 }
