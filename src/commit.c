@@ -40,7 +40,28 @@ int create_commit(const char *message)
         return 1;
     }
 
-    unsigned long parent = get_current_commit();
+    unsigned long parent = get_head_commit();
+
+    IndexEntry commit_entries[MAX_INDEX_ENTRIES];
+    int commit_count;
+
+    if (load_commit_files(
+            parent,
+            commit_entries,
+            &commit_count
+    ) != 0) {
+        return 1;
+    }
+
+    if (index_matches_commit(
+            entries,
+            count,
+            commit_entries,
+            commit_count
+    )) {
+        fprintf(stderr, "cforge: nothing to commit\n");
+        return 1;
+    }
 
     char commit_data[8192];
     int offset = 0;
@@ -130,7 +151,7 @@ int show_log(void) {
         snprintf(
             object_path,
             sizeof(object_path),
-            "./cforge/objects/%lu",
+            ".cforge/objects/%lu",
             commit_id
         );
 

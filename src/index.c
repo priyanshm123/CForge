@@ -205,3 +205,38 @@ int print_staged_files_against_head(void)
 
     return 0;
 }
+
+int index_matches_commit(
+    IndexEntry index_entries[],
+    int index_count,
+    IndexEntry commit_entries[],
+    int commit_count
+) {
+    if (index_count != commit_count) {
+        return 0;
+    }
+
+    for (int i = 0; i < index_count; i++) {
+        int found = 0;
+
+        for (int j = 0; j < commit_count; j++) {
+            if (strcmp(
+                index_entries[i].filepath,
+                commit_entries[j].filepath
+            ) == 0) {
+                found = 1;
+
+                if (index_entries[i].object_id != commit_entries[j].object_id) {
+                    return 0;
+                }
+
+                break;
+            }
+        }
+        if (!found) {
+            return 0;
+        }
+    }
+
+    return 1;
+}
